@@ -2,36 +2,30 @@ import networkx
 import matplotlib
 import csv
 
+import distances
+
 # Instantiate Graph object
 ukraine = networkx.Graph()
 
-# Read city data from csv file
-ukraine_matrix_file = open("Ukraine.csv", 'r')
-csv_reader = csv.reader(ukraine_matrix_file, delimiter=',')
 
-# Iterate trough the file, generating the graph matrix
-ukraine_matrix = []
-for line in ukraine_matrix_file:
-    city_connections = []
-
-    for number in line.replace('\n', '').replace(' ', '').split(','):
-        city_connections.append(int(number))
-
-    ukraine_matrix.append(city_connections)
-
-# Add nodes from the matrix
-for city_index in range(len(ukraine_matrix)):
+for city_index, city in enumerate(distances.distances):
     ukraine.add_node(city_index+1)
 
-# Add edges between nodes
-for city_index, city in enumerate(ukraine_matrix):
-    for connection in city:
-        ukraine.add_edge(city_index+1, connection)
+for city_index, city in enumerate(distances.distances):
+    for paths in city:
+        ukraine.add_edge(city_index+1, paths[0], weight=paths[1])
+
+
+pos = networkx.spring_layout(ukraine, seed=7)
+networkx.draw_networkx_nodes(ukraine, pos, node_size=700)
+networkx.draw_networkx_edges(ukraine, pos, width=6)
+edge_labels = networkx.get_edge_attributes(ukraine, "weight")
+networkx.draw_networkx_edge_labels(ukraine, pos, edge_labels)
+
 
 print(networkx.node_connectivity(ukraine))
 print(networkx.edge_connectivity(ukraine))
 
-# Render graph on screen
-networkx.draw_networkx(ukraine, with_labels=True)
+
 matplotlib.pyplot.show()
 
